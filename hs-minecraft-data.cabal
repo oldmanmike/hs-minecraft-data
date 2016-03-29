@@ -17,9 +17,56 @@ cabal-version:        >=1.10
 library
   hs-source-dirs:       src
   ghc-options:          -Wall
-  exposed-modules:      Data.Minecraft
-  build-depends:        aeson,
-                        base >= 4.7 && < 5
+  exposed-modules:      Data.Minecraft.Classic
+                        Data.Minecraft.Classic.Protocol
+                        Data.Minecraft.Classic.Version
+                        Data.Minecraft.Common
+                        Data.Minecraft.Common.ProtocolVersions
+                        Data.Minecraft.Common.Versions
+                        Data.Minecraft.LatestSnapshot.Biomes
+                        Data.Minecraft.LatestSnapshot.Blocks
+                        Data.Minecraft.LatestSnapshot.Effects
+                        Data.Minecraft.LatestSnapshot.Entities
+                        Data.Minecraft.LatestSnapshot.Instruments
+                        Data.Minecraft.LatestSnapshot.Items
+                        Data.Minecraft.LatestSnapshot.Materials
+                        Data.Minecraft.LatestSnapshot.Protocol
+                        Data.Minecraft.LatestSnapshot.Version
+                        Data.Minecraft.LatestSnapshot.Windows
+                        Data.Minecraft.Release17
+                        Data.Minecraft.Release17.Biomes
+                        Data.Minecraft.Release17.Blocks
+                        Data.Minecraft.Release17.Effects
+                        Data.Minecraft.Release17.Entities
+                        Data.Minecraft.Release17.Instruments
+                        Data.Minecraft.Release17.Items
+                        Data.Minecraft.Release17.Materials
+                        Data.Minecraft.Release17.Protocol
+                        Data.Minecraft.Release17.Version
+                        Data.Minecraft.Release17.Windows
+                        Data.Minecraft.Release18
+                        Data.Minecraft.Release18.Biomes
+                        Data.Minecraft.Release18.Blocks
+                        Data.Minecraft.Release18.Effects
+                        Data.Minecraft.Release18.Entities
+                        Data.Minecraft.Release18.Instruments
+                        Data.Minecraft.Release18.Items
+                        Data.Minecraft.Release18.Materials
+                        Data.Minecraft.Release18.Protocol
+                        Data.Minecraft.Release18.Version
+                        Data.Minecraft.Release18.Windows
+                        Data.Minecraft.Release19
+                        Data.Minecraft.Release19.Biomes
+                        Data.Minecraft.Release19.Blocks
+                        Data.Minecraft.Release19.Effects
+                        Data.Minecraft.Release19.Entities
+                        Data.Minecraft.Release19.Instruments
+                        Data.Minecraft.Release19.Items
+                        Data.Minecraft.Release19.Materials
+                        Data.Minecraft.Release19.Protocol
+                        Data.Minecraft.Release19.Version
+                        Data.Minecraft.Release19.Windows
+  build-depends:        base >= 4.7 && < 5
   default-language:     Haskell2010
 
 executable gen
