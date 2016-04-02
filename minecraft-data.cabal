@@ -18,11 +18,11 @@ library
   hs-source-dirs:       src
   ghc-options:          -Wall
   exposed-modules:      Data.Minecraft.Classic
-                        Data.Minecraft.Classic.Protocol
+                        --Data.Minecraft.Classic.Protocol
                         Data.Minecraft.Classic.Version
                         --Data.Minecraft.Common
                         --Data.Minecraft.Common.ProtocolVersions
-                        Data.Minecraft.Common.Versions
+                        --Data.Minecraft.Common.Versions
                         --Data.Minecraft.LatestSnapshot.Biomes
                         --Data.Minecraft.LatestSnapshot.Blocks
                         --Data.Minecraft.LatestSnapshot.Effects
@@ -31,7 +31,7 @@ library
                         --Data.Minecraft.LatestSnapshot.Items
                         --Data.Minecraft.LatestSnapshot.Materials
                         --Data.Minecraft.LatestSnapshot.Protocol
-                        Data.Minecraft.LatestSnapshot.Version
+                        --Data.Minecraft.LatestSnapshot.Version
                         --Data.Minecraft.LatestSnapshot.Windows
                         --Data.Minecraft.Release17
                         --Data.Minecraft.Release17.Biomes
@@ -42,7 +42,7 @@ library
                         --Data.Minecraft.Release17.Items
                         --Data.Minecraft.Release17.Materials
                         --Data.Minecraft.Release17.Protocol
-                        Data.Minecraft.Release17.Version
+                        --Data.Minecraft.Release17.Version
                         --Data.Minecraft.Release17.Windows
                         --Data.Minecraft.Release18
                         --Data.Minecraft.Release18.Biomes
@@ -53,7 +53,7 @@ library
                         --Data.Minecraft.Release18.Items
                         --Data.Minecraft.Release18.Materials
                         --Data.Minecraft.Release18.Protocol
-                        Data.Minecraft.Release18.Version
+                        --Data.Minecraft.Release18.Version
                         --Data.Minecraft.Release18.Windows
                         --Data.Minecraft.Release19
                         --Data.Minecraft.Release19.Biomes
@@ -64,7 +64,7 @@ library
                         --Data.Minecraft.Release19.Items
                         --Data.Minecraft.Release19.Materials
                         --Data.Minecraft.Release19.Protocol
-                        Data.Minecraft.Release19.Version
+                        --Data.Minecraft.Release19.Version
                         --Data.Minecraft.Release19.Windows
   build-depends:        base >= 4.7 && < 5
   default-language:     Haskell2010
@@ -75,7 +75,9 @@ executable gen
   build-depends:        aeson,
                         base,
                         bytestring,
-                        minecraft-data
+                        containers,
+                        minecraft-data,
+                        split
   default-language:     Haskell2010
 
 test-suite hs-minecraft-data-test
