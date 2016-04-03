@@ -81,7 +81,7 @@ writeModule path flst = do
       Just moduleName -> do
         let doc = mkModule path flst
         print doc
-        writeFile ("src/"++moduleName++".hs") doc
+        writeFile ("../src/"++moduleName++".hs") doc
       Nothing -> print "something"
 
 main :: IO ()
