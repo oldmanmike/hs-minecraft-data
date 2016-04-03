@@ -159,6 +159,34 @@ instance FromJSON ExtractedEffect where
     <*> a .: "type"
   parseJSON _ = mzero
 
+data ExtractedEntities = ExtractedEntities [ExtractedEntity]
+  deriving (Show,Eq,Generic,Data,Typeable)
+
+instance FromJSON ExtractedEntities
+
+data ExtractedEntity = ExtractedEntity
+  { entityId            :: Int
+  , entityInternalId    :: Maybe Int
+  , entityName          :: String
+  , entityDisplayName   :: String
+  , entityType          :: String
+  , entityWidth         :: Double
+  , entityHeight        :: Double
+  , entityCategory      :: Maybe String
+  } deriving (Show,Eq,Generic,Data,Typeable)
+
+instance FromJSON ExtractedEntity where
+  parseJSON (Object a) = ExtractedEntity
+    <$> a .: "id"
+    <*> a .:? "internalId"
+    <*> a .: "name"
+    <*> a .: "displayName"
+    <*> a .: "type"
+    <*> a .: "width"
+    <*> a .: "height"
+    <*> a .:? "category"
+  parseJSON _ = mzero
+
 data ExtractedVersion = ExtractedVersion
   { version :: Int
   , minecraftVersion :: String
@@ -261,6 +289,9 @@ genEntities :: IO ()
 genEntities = do
   putStrLn "Generating Entity data..."
   rawEntitiesList <- mapM (\x -> B.readFile (x ++ "/entities.json")) dataPaths
+  let possibleEntitiesList = mapM eitherDecodeStrict' rawEntitiesList :: Either String [ExtractedEntities]
+  print possibleEntitiesList
+
   return ()
 
 genInstruments :: IO ()
