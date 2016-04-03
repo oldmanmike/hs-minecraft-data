@@ -20,9 +20,7 @@ library
   exposed-modules:      Data.Minecraft.Classic
                         --Data.Minecraft.Classic.Protocol
                         Data.Minecraft.Classic.Version
-                        --Data.Minecraft.Common
-                        --Data.Minecraft.Common.ProtocolVersions
-                        --Data.Minecraft.Common.Versions
+                        --Data.Minecraft.LatestSnapshot
                         --Data.Minecraft.LatestSnapshot.Biomes
                         --Data.Minecraft.LatestSnapshot.Blocks
                         --Data.Minecraft.LatestSnapshot.Effects

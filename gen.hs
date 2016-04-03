@@ -12,9 +12,7 @@ import qualified  Data.Map as Map
 import            Data.Maybe
 import            GHC.Generics hiding (moduleName)
 
-
 type ExtractedVersionList = [String]
-
 
 data ExtractedVersion = ExtractedVersion
   { version :: Int
@@ -22,69 +20,10 @@ data ExtractedVersion = ExtractedVersion
   , majorVersion :: String
   } deriving (Show,Eq,Generic,Data,Typeable)
 
-
 instance FromJSON ExtractedVersion
 instance ToJSON ExtractedVersion
 
-topCommentBlock :: FilePath -> String
-topCommentBlock path = concat
-  [ "------------------------------------------------------------------------\n"
-  , "-- |\n"
-  , "-- Module        : " ++ moduleName path ++ "\n"
-  , "-- Copyright     : (c) 2016 Michael Carpenter\n"
-  , "-- License       : BSD3\n"
-  , "-- Maintainer    : Michael Carpenter <oldmanmike.dev@gmail.com>\n"
-  , "-- Stability     : experimental\n"
-  , "-- Portability   : portable\n"
-  , "--\n"
-  , "------------------------------------------------------------------------\n"
-  ]
-
-extractedValues :: [(ExtractedVersion -> String)]
-extractedValues = [(show . version),(show . minecraftVersion),(show . majorVersion)]
-
-
-fmtVersion :: FilePath -> [String] -> [String] -> String
-fmtVersion path fields values = concat $ 
-  [header path [] fields]
-  ++ zipWith (\f v -> f ++ " = " ++ v ++ "\n\n") fields values
-
-
-fmtVersions :: [(FilePath,([String],[String]))] -> [(FilePath,String)]
-fmtVersions [] = []
-fmtVersions ((path,(fields,values)):xs)
-  = (path,fmtVersion path fields values) : (fmtVersions xs)
-
-
-header :: FilePath -> [String] -> [String] -> String
-header path dats funcs = do
-  let maybeModule = Map.lookup path versionPathMap
-  case maybeModule of
-    Just validModule -> concat $
-      [ topCommentBlock path
-      , "module " ++ validModule ++ "\n"
-      , "  (\n"
-      , exports dats
-      , exports funcs
-      , "  ) where\n\n"
-      ]
-    Nothing -> ""
-
-
-moduleName :: FilePath -> String
-moduleName path = concat $ (intersperse ".") $ map capitalize $ splitOn "/" path
-
-
-capitalize :: String -> String
-capitalize (head:tail) = toUpper head : lowered tail
-  where lowered [] = []
-        lowered (head:tail) = toLower head : lowered tail
-
-
-exports :: [String] -> String
-exports [] = ""
-exports (x:xs) = ("  , " ++ x ++ "\n") ++ exports xs
-
+type FuncString = (String,String)
 
 versionPathMap :: Map.Map String String
 versionPathMap = Map.fromList
@@ -96,18 +35,54 @@ versionPathMap = Map.fromList
   , ("minecraft-data/data/1.9.1-pre2/version.json","Data/Minecraft/LatestSnapshot/Version")
   ]
 
+mkModule :: FilePath -> [FuncString] -> String
+mkModule path ((f,v):fs) = do
+  let maybeModuleName = Map.lookup path versionPathMap
+  case maybeModuleName of
+    Just actualModuleName -> concat $
+      [ "--------------------------------------------------------------------\n"
+      , "-- |\n"
+      , "-- Module        : " ++ fmtModuleName actualModuleName ++ "\n"
+      , "-- Copyright     : (c) 2016 Michael Carpenter\n"
+      , "-- License       : BSD3\n"
+      , "-- Maintainer    : Michael Carpenter <oldmanmike.dev@gmail.com>\n"
+      , "-- Stability     : experimental\n"
+      , "-- Portability   : portable\n"
+      , "--\n"
+      , "--------------------------------------------------------------------\n"
+      , "module " ++ fmtModuleName actualModuleName ++ " (\n"
+      , exports functionDeclarations
+      , "  ) where\n"
+      , "\n"
+      , concatMap (\(f,v) -> f ++ " = " ++ v ++ "\n\n") $ ((f,v):fs)
+      ]
+    Nothing -> ""
+  where
+  functionDeclarations = f : map fst fs
 
-writeVersions :: [(FilePath,([String],[String]))] -> IO ()
-writeVersions metadataLst = do
-    mapM_ (\(k,s) -> do
-          let maybeModuleName = Map.lookup k versionPathMap
-          case maybeModuleName of
-            Just moduleName -> do
-              let dat = fmtVersions metadataLst
-              mapM_ (\(_,s) -> writeFile ("src/"++moduleName++".hs") s) dat
-            Nothing -> return ()
-          ) metadataLst
+extractedValues :: [(ExtractedVersion -> String)]
+extractedValues = [(show . version),(show . minecraftVersion),(show . majorVersion)]
 
+fmtModuleName :: FilePath -> String
+fmtModuleName path = concat $ (intersperse ".") $ map capitalize $ splitOn "/" path
+
+capitalize :: String -> String
+capitalize (head:tail) = toUpper head : tail
+
+exports :: [String] -> String
+exports [] = ""
+exports (x:xs) = ("  " ++ x ++ ",\n") ++ exports xs
+
+writeModule :: FilePath -> [FuncString] -> IO ()
+writeModule path flst = do
+    print "Got here"
+    let maybeModuleName = Map.lookup path versionPathMap
+    case maybeModuleName of
+      Just moduleName -> do
+        let doc = mkModule path flst
+        print doc
+        writeFile ("src/"++moduleName++".hs") doc
+      Nothing -> print "something"
 
 main :: IO ()
 main = do
@@ -123,7 +98,6 @@ main = do
         Right extractedList -> do
           let fields = fmap (\x -> constrFields (toConstr x)) extractedList
           let values = fmap (\x -> fmap (\f -> f x) extractedValues) extractedList
-          let maybeMetadataLst = zip versionPaths $ zip fields values
-          writeVersions maybeMetadataLst
+          mapM_ (\(a,b) -> writeModule a b) $ zip versionPaths $ zipWith zip fields values
         Left err -> print err
     Left err -> print err
