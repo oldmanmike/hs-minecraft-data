@@ -75,14 +75,12 @@ exports (x:xs) = ("  " ++ x ++ ",\n") ++ exports xs
 
 writeModule :: FilePath -> [FuncString] -> IO ()
 writeModule path flst = do
-    print "Got here"
     let maybeModuleName = Map.lookup path versionPathMap
     case maybeModuleName of
       Just moduleName -> do
         let doc = mkModule path flst
-        print doc
         writeFile ("../src/"++moduleName++".hs") doc
-      Nothing -> print "something"
+      Nothing -> return ()
 
 dataPaths :: [FilePath]
 dataPaths =
