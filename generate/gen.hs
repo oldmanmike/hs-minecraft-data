@@ -84,8 +84,42 @@ writeModule path flst = do
         writeFile ("../src/"++moduleName++".hs") doc
       Nothing -> print "something"
 
-main :: IO ()
-main = do
+dataPaths :: [FilePath]
+dataPaths =
+  [ "minecraft-data/data/1.7"
+  , "minecraft-data/data/1.8"
+  , "minecraft-data/data/1.9"
+  ]
+
+
+genBiomes :: IO ()
+genBiomes = do
+  rawBiomesList <- mapM (\x -> B.readFile (x ++ "/biomes.json")) dataPaths
+  return ()
+
+genBlocks :: IO ()
+genBlocks = putStrLn "Generating Block data..."
+
+genEffects :: IO ()
+genEffects = putStrLn "Generating Effect data..."
+
+genEntities :: IO ()
+genEntities = putStrLn "Generating Entity data..."
+
+genInstruments :: IO ()
+genInstruments = putStrLn "Generating Instrument data..."
+
+genItems :: IO ()
+genItems = putStrLn "Generating Item data..."
+
+genMaterials :: IO ()
+genMaterials = putStrLn "Generating Material data..."
+
+genProtocols :: IO ()
+genProtocols = putStrLn "Generating Protocol data..."
+
+genVersions :: IO ()
+genVersions = do
   rawVersionList <- B.readFile "minecraft-data/data/common/versions.json"
   let possiblyVersionList = eitherDecodeStrict' rawVersionList :: Either String [String] 
   case possiblyVersionList of
@@ -101,3 +135,21 @@ main = do
           mapM_ (\(a,b) -> writeModule a b) $ zip versionPaths $ zipWith zip fields values
         Left err -> print err
     Left err -> print err
+
+genWindows :: IO ()
+genWindows = putStrLn "Generating Windows data..."
+
+main :: IO ()
+main = do
+  print "Generating hs-minecraft-data from minecraft-data..."
+  genBiomes
+  genBlocks
+  genEffects
+  genEntities
+  genInstruments
+  genItems
+  genMaterials
+  genProtocols
+  genVersions
+  genWindows
+  print "Done!"
