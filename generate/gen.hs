@@ -2,6 +2,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 
+import            Control.Monad
 import            Data.Aeson
 import qualified  Data.ByteString as B
 import            Data.Char
@@ -13,6 +14,150 @@ import            Data.Maybe
 import            GHC.Generics hiding (moduleName)
 
 type ExtractedVersionList = [String]
+
+data ExtractedBiomes = ExtractedBiomes [ExtractedBiome]
+  deriving (Show,Eq,Generic,Data,Typeable)
+
+instance ToJSON ExtractedBiomes
+instance FromJSON ExtractedBiomes
+
+
+data ExtractedBiome = ExtractedBiome 
+  { biomeId           :: Int
+  , biomeColor        :: Int
+  , biomeName         :: String
+  , biomeRainfall     :: Double
+  , biomeTemperature  :: Double
+  } deriving (Show,Eq,Generic,Data,Typeable)
+
+instance ToJSON ExtractedBiome where
+  toJSON (ExtractedBiome a b c d e) = object
+    [ "id"            .= a
+    , "color"         .= b
+    , "name"          .= c
+    , "rainfall"      .= d
+    , "temperature"   .= e
+    ]
+             
+instance FromJSON ExtractedBiome where
+  parseJSON (Object a) = ExtractedBiome
+    <$> a .: "id"
+    <*> a .: "color"
+    <*> a .: "name"
+    <*> a .: "rainfall"
+    <*> a .: "temperature"
+  parseJSON _ = mzero
+
+data ExtractedBlocks = ExtractedBlocks [ExtractedBlock]
+  deriving (Show,Eq,Generic,Data,Typeable)
+
+instance FromJSON ExtractedBlocks
+
+data ExtractedBlock = ExtractedBlock
+  { blockId           :: Int
+  , blockDisplayName  :: String
+  , blockName         :: String
+  , blockHardness     :: Int
+  , blockStackSize    :: Int
+  , blockDiggable     :: Bool
+  , blockBoundedBox   :: Maybe String
+  , blockMaterial     :: Maybe String
+  , blockHarvestTools :: Maybe [(ExtractedBlock,Bool)]
+  , blockVariations   :: Maybe ExtractedVariations
+  , blockDrops        :: Maybe ExtractedDrops
+  , blockTransparent  :: Bool
+  , blockEmitLight    :: Int
+  , blockFilterLight  :: Int
+  } deriving (Show,Eq,Generic,Data,Typeable)
+
+
+{-
+instance ToJSON ExtractedBlock where
+  toJSON (ExtractedBlock a b c d e f g h i j k l m n) = object
+    [ "id"            .= a
+    , "displayName"   .= b
+    , "name"          .= c
+    , "hardness"      .= d
+    , "stackSize"     .= e
+    , "diggable"      .= f
+    , "boundedBox"    .= g
+    , "material"      .= h
+    , "harvestTools"  .= i
+    , "variations"    .= j
+    , "drops"         .= k
+    , "transparent"   .= l
+    , "emitLight"     .= m
+    , "filterLight"   .= n
+    ]
+-}
+
+instance FromJSON ExtractedBlock where
+  parseJSON (Object a) = ExtractedBlock
+    <$> a .: "id"
+    <*> a .: "displayName"
+    <*> a .: "name"
+    <*> a .: "hardness"
+    <*> a .: "stackSize"
+    <*> a .: "diggable"
+    <*> a .:? "boundedBox"
+    <*> a .:? "material" 
+    <*> a .:? "harvestTools"
+    <*> a .:? "variations"
+    <*> a .:? "drops"
+    <*> a .: "transparent"
+    <*> a .: "emitLight"
+    <*> a .: "filterLight"
+  parseJSON _ = mzero
+
+data ExtractedVariations = ExtractedVariations [ExtractedVariation]
+  deriving (Show,Eq,Generic,Data,Typeable)
+
+instance FromJSON ExtractedVariations
+
+data ExtractedVariation = ExtractedVariation
+  { variationMetadata     :: Int
+  , variationDisplayName  :: String
+  } deriving (Show,Eq,Generic,Data,Typeable)
+
+instance FromJSON ExtractedVariation where
+  parseJSON (Object a) = ExtractedVariation
+    <$> a .: "metadata"
+    <*> a .: "displayName"
+  parseJSON _ = mzero
+
+data ExtractedDrops = ExtractedDrops [ExtractedDrop]
+  deriving (Show,Eq,Generic,Data,Typeable)
+
+instance FromJSON ExtractedDrops
+
+data ExtractedDrop = ExtractedDrop
+  { dropDrop  :: Int
+  } deriving (Show,Eq,Generic,Data,Typeable)
+
+instance FromJSON ExtractedDrop where
+  parseJSON (Object a) = ExtractedDrop
+    <$> a .: "drop"
+  parseJSON _ = mzero
+
+data ExtractedEffects = ExtractedEffects [ExtractedEffect]
+  deriving (Show,Eq,Generic,Data,Typeable)
+
+instance FromJSON ExtractedEffects
+
+data ExtractedEffect = ExtractedEffect
+  { effectId          :: Int
+  , effectName        :: String
+  , effectDisplayName :: String
+  , effectType        :: String
+  } deriving (Show,Eq,Generic,Data,Typeable)
+
+instance FromJSON ExtractedEffect where
+  parseJSON (Object a) = ExtractedEffect
+    <$> a .: "id"
+    <*> a .: "name"
+    <*> a .: "displayName"
+    <*> a .: "type"
+  parseJSON _ = mzero
 
 data ExtractedVersion = ExtractedVersion
   { version :: Int
@@ -89,32 +234,52 @@ dataPaths =
   , "minecraft-data/data/1.9"
   ]
 
-
 genBiomes :: IO ()
 genBiomes = do
+  putStrLn "Generating Biome data..."
   rawBiomesList <- mapM (\x -> B.readFile (x ++ "/biomes.json")) dataPaths
+  let possibleBiomesList = mapM eitherDecodeStrict' rawBiomesList :: Either String [ExtractedBiomes]
   return ()
 
 genBlocks :: IO ()
-genBlocks = putStrLn "Generating Block data..."
+genBlocks = do
+  putStrLn "Generating Block data..."
+  rawBlocksList <- mapM (\x -> B.readFile (x ++ "/blocks.json")) dataPaths
+  let possibleBlocksList = mapM eitherDecodeStrict' rawBlocksList :: Either String [ExtractedBlocks]
+  print possibleBlocksList
+  return ()
 
 genEffects :: IO ()
-genEffects = putStrLn "Generating Effect data..."
+genEffects = do
+  putStrLn "Generating Effect data..."
+  rawEffectsList <- mapM (\x -> B.readFile (x ++ "/effects.json")) dataPaths
+  let possibleEffectsList = mapM eitherDecodeStrict' rawEffectsList :: Either String [ExtractedEffects]
+  print possibleEffectsList
+  return ()
 
 genEntities :: IO ()
-genEntities = putStrLn "Generating Entity data..."
+genEntities = do
+  putStrLn "Generating Entity data..."
+  rawEntitiesList <- mapM (\x -> B.readFile (x ++ "/entities.json")) dataPaths
+  return ()
 
 genInstruments :: IO ()
-genInstruments = putStrLn "Generating Instrument data..."
+genInstruments = do
+  putStrLn "Generating Instrument data..."
+  rawInstrumentsList <- mapM (\x -> B.readFile (x ++ "/instruments.json")) dataPaths
+  return ()
 
 genItems :: IO ()
-genItems = putStrLn "Generating Item data..."
+genItems = do
+  putStrLn "Generating Item data..."
+  rawItemsList <- mapM (\x -> B.readFile (x ++ "/items.json")) dataPaths
+  return ()
 
 genMaterials :: IO ()
-genMaterials = putStrLn "Generating Material data..."
-
-genProtocols :: IO ()
-genProtocols = putStrLn "Generating Protocol data..."
+genMaterials = do
+  putStrLn "Generating Material data..."
+  rawMaterialsList <- mapM (\x -> B.readFile (x ++ "/materials.json")) dataPaths
+  return ()
 
 genVersions :: IO ()
 genVersions = do
@@ -139,7 +304,7 @@ genWindows = putStrLn "Generating Windows data..."
 
 main :: IO ()
 main = do
-  print "Generating hs-minecraft-data from minecraft-data..."
+  putStrLn "Generating hs-minecraft-data from minecraft-data..."
   genBiomes
   genBlocks
   genEffects
@@ -147,7 +312,6 @@ main = do
   genInstruments
   genItems
   genMaterials
-  genProtocols
   genVersions
   genWindows
-  print "Done!"
+  putStrLn "Done!"
