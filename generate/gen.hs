@@ -187,6 +187,44 @@ instance FromJSON ExtractedEntity where
     <*> a .:? "category"
   parseJSON _ = mzero
 
+data ExtractedInstruments = ExtractedInstruments [ExtractedInstrument]
+  deriving (Show,Eq,Generic,Data,Typeable)
+
+instance FromJSON ExtractedInstruments
+
+data ExtractedInstrument = ExtractedInstrument
+  { instrumentId    :: Int
+  , instrumentName  :: String
+  } deriving (Show,Eq,Generic,Data,Typeable)
+
+instance FromJSON ExtractedInstrument where
+  parseJSON (Object a) = ExtractedInstrument
+    <$> a .: "id"
+    <*> a .: "name"
+  parseJSON _ = mzero
+
+data ExtractedItems = ExtractedItems [ExtractedItem]
+  deriving (Show,Eq,Generic,Data,Typeable)
+
+instance FromJSON ExtractedItems
+
+data ExtractedItem = ExtractedItem
+  { itemId          :: Int
+  , itemDisplayName :: String
+  , itemStackSize   :: Int
+  , itemName        :: String
+  , itemVariations  :: Maybe ExtractedVariations
+  } deriving (Show,Eq,Generic,Data,Typeable)
+
+instance FromJSON ExtractedItem where
+  parseJSON (Object a) = ExtractedItem
+    <$> a .: "id"
+    <*> a .: "displayName"
+    <*> a .: "stackSize"
+    <*> a .: "name"
+    <*> a .:? "variations"
+  parseJSON _ = mzero
+
 data ExtractedVersion = ExtractedVersion
   { version :: Int
   , minecraftVersion :: String
@@ -267,44 +305,54 @@ genBiomes = do
   putStrLn "Generating Biome data..."
   rawBiomesList <- mapM (\x -> B.readFile (x ++ "/biomes.json")) dataPaths
   let possibleBiomesList = mapM eitherDecodeStrict' rawBiomesList :: Either String [ExtractedBiomes]
-  return ()
+  case possibleBiomesList of
+    Right biomesList -> return ()
+    Left err -> putStrLn err
 
 genBlocks :: IO ()
 genBlocks = do
   putStrLn "Generating Block data..."
   rawBlocksList <- mapM (\x -> B.readFile (x ++ "/blocks.json")) dataPaths
   let possibleBlocksList = mapM eitherDecodeStrict' rawBlocksList :: Either String [ExtractedBlocks]
-  print possibleBlocksList
-  return ()
+  case possibleBlocksList of
+    Right blocksList -> return ()
+    Left err -> putStrLn err
 
 genEffects :: IO ()
 genEffects = do
   putStrLn "Generating Effect data..."
   rawEffectsList <- mapM (\x -> B.readFile (x ++ "/effects.json")) dataPaths
   let possibleEffectsList = mapM eitherDecodeStrict' rawEffectsList :: Either String [ExtractedEffects]
-  print possibleEffectsList
-  return ()
+  case possibleEffectsList of
+    Right effectsList -> return ()
+    Left err -> putStrLn err
 
 genEntities :: IO ()
 genEntities = do
   putStrLn "Generating Entity data..."
   rawEntitiesList <- mapM (\x -> B.readFile (x ++ "/entities.json")) dataPaths
   let possibleEntitiesList = mapM eitherDecodeStrict' rawEntitiesList :: Either String [ExtractedEntities]
-  print possibleEntitiesList
-
-  return ()
+  case possibleEntitiesList of
+    Right entitiesList -> return ()
+    Left err -> putStrLn err
 
 genInstruments :: IO ()
 genInstruments = do
   putStrLn "Generating Instrument data..."
   rawInstrumentsList <- mapM (\x -> B.readFile (x ++ "/instruments.json")) dataPaths
-  return ()
+  let possibleInstrumentsList = mapM eitherDecodeStrict' rawInstrumentsList :: Either String [ExtractedInstruments]
+  case possibleInstrumentsList of
+    Right instrumentsList -> return ()
+    Left err -> putStrLn err
 
 genItems :: IO ()
 genItems = do
   putStrLn "Generating Item data..."
   rawItemsList <- mapM (\x -> B.readFile (x ++ "/items.json")) dataPaths
-  return ()
+  let possibleItemsList = mapM eitherDecodeStrict' rawItemsList :: Either String [ExtractedItems]
+  case possibleItemsList of
+    Right itemsList -> return ()
+    Left err -> putStrLn err
 
 genMaterials :: IO ()
 genMaterials = do
@@ -327,8 +375,8 @@ genVersions = do
           let fields = fmap (\x -> constrFields (toConstr x)) extractedList
           let values = fmap (\x -> fmap (\f -> f x) extractedValues) extractedList
           mapM_ (\(a,b) -> writeModule a b) $ zip versionPaths $ zipWith zip fields values
-        Left err -> print err
-    Left err -> print err
+        Left err -> putStrLn err
+    Left err -> putStrLn err
 
 genWindows :: IO ()
 genWindows = putStrLn "Generating Windows data..."
