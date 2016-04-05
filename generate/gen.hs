@@ -22,7 +22,7 @@ instance ToJSON ExtractedBiomes
 instance FromJSON ExtractedBiomes
 
 
-data ExtractedBiome = ExtractedBiome 
+data ExtractedBiome = ExtractedBiome
   { biomeId           :: Int
   , biomeColor        :: Int
   , biomeName         :: String
@@ -38,7 +38,7 @@ instance ToJSON ExtractedBiome where
     , "rainfall"      .= d
     , "temperature"   .= e
     ]
-             
+
 instance FromJSON ExtractedBiome where
   parseJSON (Object a) = ExtractedBiome
     <$> a .: "id"
@@ -100,7 +100,7 @@ instance FromJSON ExtractedBlock where
     <*> a .: "stackSize"
     <*> a .: "diggable"
     <*> a .:? "boundedBox"
-    <*> a .:? "material" 
+    <*> a .:? "material"
     <*> a .:? "harvestTools"
     <*> a .:? "variations"
     <*> a .:? "drops"
@@ -224,6 +224,79 @@ instance FromJSON ExtractedItem where
     <*> a .: "name"
     <*> a .:? "variations"
   parseJSON _ = mzero
+
+data ExtractedModernProtocol = ExtractedModernProtocol
+  { modernTypes       :: Object
+  , modernHandshaking :: Object
+  , modernStatus      :: Object
+  , modernLogin       :: Object
+  , modernPlay        :: Object
+  } deriving (Show,Eq)
+
+instance FromJSON ExtractedModernProtocol where
+  parseJSON (Object a) = do
+    pTypes <- a .: "types"
+
+    handshaking <- a .: "handshaking"
+    status <- a .: "status"
+    login <- a .: "login"
+    play <- a .: "play"
+    return (ExtractedModernProtocol pTypes handshaking status login play)
+
+  parseJSON _ = mzero
+
+data ExtractedClassicProtocol = ExtractedClassicProtocol
+  { classicTypes     :: Object
+  , classicToServer  :: Object
+  , classicToClient  :: Object
+  } deriving (Show,Eq)
+
+instance FromJSON ExtractedClassicProtocol where
+  parseJSON (Object a) = do
+    pTypes <- a .: "types"
+
+    toServer <- a .: "toServer"
+    toServerTypes <- toServer .: "types"
+
+    toClient <- a .: "toClient"
+    toClientTypes <- toClient .: "types"
+
+    return (ExtractedClassicProtocol pTypes toServerTypes toClientTypes)
+
+  parseJSON _ = mzero
+
+
+typeConverter :: Map.Map String String
+typeConverter = Map.fromList $
+  [ ("varint","VarInt")
+  , ("pstring","PString")
+  , ("u16","Word16")
+  , ("u8","Word8")
+  , ("i64","Int64")
+  , ("buffer","Buffer")
+  , ("i32","Int32")
+  , ("i8","Int8")
+  , ("bool","Bool")
+  , ("i16","Int16")
+  , ("f32","Float")
+  , ("f64","Double")
+  , ("UUID","UUID")
+  , ("option","Maybe")
+  , ("entityMetadataLoop","EntityMetadataLoop")
+  , ("bitfield","Bitfield")
+  , ("container","Container")
+  , ("switch","Switch")
+  , ("void","Void")
+  , ("array","Array")
+  , ("restBuffer","RestBuffer")
+  , ("nbt","NBT")
+  , ("optionalNbt","Maybe NBT")
+  , ("string","String")
+  , ("slot","Slot")
+  , ("position","Position")
+  , ("entityMetadataItem","EntityMetadataItem")
+  , ("entityMetadata","EntityMetadata")
+  ]
 
 data ExtractedVersion = ExtractedVersion
   { version :: Int
@@ -360,10 +433,25 @@ genMaterials = do
   rawMaterialsList <- mapM (\x -> B.readFile (x ++ "/materials.json")) dataPaths
   return ()
 
+genProtocols :: IO ()
+genProtocols = do
+  putStrLn "Generating Protocol data..."
+  rawClassicProtocol <- B.readFile "minecraft-data/data/0.30c/protocol.json"
+  let classicProtocol = eitherDecodeStrict' rawClassicProtocol :: Either String ExtractedClassicProtocol
+  rawRelease17Protocol <- B.readFile "minecraft-data/data/1.7/protocol.json"
+  let release17Protocol = eitherDecodeStrict' rawRelease17Protocol :: Either String ExtractedModernProtocol
+  rawRelease18Protocol <- B.readFile "minecraft-data/data/1.8/protocol.json"
+  let release18Protocol = eitherDecodeStrict' rawRelease18Protocol :: Either String ExtractedModernProtocol
+  rawRelease19Protocol <- B.readFile "minecraft-data/data/1.9/protocol.json"
+  let release19Protocol = eitherDecodeStrict' rawRelease19Protocol :: Either String ExtractedModernProtocol
+  rawLatestSnapshotProtocol <- B.readFile "minecraft-data/data/1.9.1-pre2/protocol.json"
+  let latestSnapshotProtocol = eitherDecodeStrict' rawLatestSnapshotProtocol :: Either String ExtractedModernProtocol
+  return ()
+
 genVersions :: IO ()
 genVersions = do
   rawVersionList <- B.readFile "minecraft-data/data/common/versions.json"
-  let possiblyVersionList = eitherDecodeStrict' rawVersionList :: Either String [String] 
+  let possiblyVersionList = eitherDecodeStrict' rawVersionList :: Either String [String]
   case possiblyVersionList of
     Right versionList -> do
       let versionPaths =
@@ -391,6 +479,7 @@ main = do
   genInstruments
   genItems
   genMaterials
+  genProtocols
   genVersions
   genWindows
   putStrLn "Done!"
