@@ -1,5 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
+-------------------------------------------------------------------------------
+-- |
+-- Module       : Generator.Parser.Blocks
+-- Copyright    : (c) 2016 Michael Carpenter
+-- License      : BSD3
+-- Maintainer   : Michael Carpenter <oldmanmike.dev@gmail.com>
+-- Stability    : experimental
+-- Portability  : portable
+--
+-------------------------------------------------------------------------------
 module Generator.Parser.Items
   ( ExtractedItems (..)
   , ExtractedItem (..)
@@ -7,6 +17,7 @@ module Generator.Parser.Items
   , ExtractedItemVariation (..)
   , parseItems
   ) where
+
 import            Control.Monad
 import            Data.Aeson
 import qualified  Data.ByteString as B

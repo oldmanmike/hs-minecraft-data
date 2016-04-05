@@ -1,7 +1,18 @@
 {-# LANGUAGE OverloadedStrings #-}
+-------------------------------------------------------------------------------
+-- |
+-- Module       : Generator.Parser.Blocks
+-- Copyright    : (c) 2016 Michael Carpenter
+-- License      : BSD3
+-- Maintainer   : Michael Carpenter <oldmanmike.dev@gmail.com>
+-- Stability    : experimental
+-- Portability  : portable
+--
+-------------------------------------------------------------------------------
 module Generator.Parser.Materials
   ( parseMaterials
   ) where
+
 import            Control.Monad
 import            Data.Aeson
 import qualified  Data.ByteString as B

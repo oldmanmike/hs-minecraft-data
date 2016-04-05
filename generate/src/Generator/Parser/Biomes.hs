@@ -1,5 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
+-------------------------------------------------------------------------------
+-- |
+-- Module       : Generator.Parser.Biomes
+-- Copyright    : (c) 2016 Michael Carpenter
+-- License      : BSD3
+-- Maintainer   : Michael Carpenter <oldmanmike.dev@gmail.com>
+-- Stability    : experimental
+-- Portability  : portable
+--
+-------------------------------------------------------------------------------
 module Generator.Parser.Biomes
   ( ExtractedBiomes (..)
   , ExtractedBiome (..)
