@@ -226,11 +226,15 @@ instance FromJSON ExtractedItem where
   parseJSON _ = mzero
 
 data ExtractedModernProtocol = ExtractedModernProtocol
-  { modernTypes       :: Object
-  , modernHandshaking :: Object
-  , modernStatus      :: Object
-  , modernLogin       :: Object
-  , modernPlay        :: Object
+  { modernTypes                   :: Object
+  , modernClientBoundHandshaking  :: Object
+  , modernServerBoundHandshaking  :: Object
+  , modernClientBoundStatus       :: Object
+  , modernServerBoundStatus       :: Object
+  , modernClientBoundLogin        :: Object
+  , modernServerBoundLogin        :: Object
+  , modernClientBoundPlay         :: Object
+  , modernServerBoundPlay         :: Object
   } deriving (Show,Eq)
 
 instance FromJSON ExtractedModernProtocol where
@@ -238,10 +242,30 @@ instance FromJSON ExtractedModernProtocol where
     pTypes <- a .: "types"
 
     handshaking <- a .: "handshaking"
+    hToClient <- handshaking .: "toClient"
+    hCPackets <- hToClient .: "types"
+    hToServer <- handshaking .: "toServer"
+    hSPackets <- hToServer .: "types"
+
     status <- a .: "status"
+    sToClient <- status .: "toClient"
+    sCPackets <- sToClient .: "types"
+    sToServer <- status .: "toServer"
+    sSPackets <- sToServer .: "types"
+
     login <- a .: "login"
+    lToClient <- login .: "toClient"
+    lCPackets <- lToClient .: "types"
+    lToServer <- login .: "toServer"
+    lSPackets <- lToServer .: "types"
+
     play <- a .: "play"
-    return (ExtractedModernProtocol pTypes handshaking status login play)
+    pToClient <- play .: "toClient"
+    pCPackets <- pToClient .: "types"
+    pToServer <- play .: "toServer"
+    pSPackets <- pToServer .: "types"
+
+    return (ExtractedModernProtocol pTypes hCPackets hSPackets sCPackets sSPackets lCPackets lSPackets pCPackets pSPackets)
 
   parseJSON _ = mzero
 
@@ -438,14 +462,19 @@ genProtocols = do
   putStrLn "Generating Protocol data..."
   rawClassicProtocol <- B.readFile "minecraft-data/data/0.30c/protocol.json"
   let classicProtocol = eitherDecodeStrict' rawClassicProtocol :: Either String ExtractedClassicProtocol
+  print classicProtocol
   rawRelease17Protocol <- B.readFile "minecraft-data/data/1.7/protocol.json"
   let release17Protocol = eitherDecodeStrict' rawRelease17Protocol :: Either String ExtractedModernProtocol
+  print release17Protocol
   rawRelease18Protocol <- B.readFile "minecraft-data/data/1.8/protocol.json"
   let release18Protocol = eitherDecodeStrict' rawRelease18Protocol :: Either String ExtractedModernProtocol
+  print release18Protocol
   rawRelease19Protocol <- B.readFile "minecraft-data/data/1.9/protocol.json"
   let release19Protocol = eitherDecodeStrict' rawRelease19Protocol :: Either String ExtractedModernProtocol
+  print release19Protocol
   rawLatestSnapshotProtocol <- B.readFile "minecraft-data/data/1.9.1-pre2/protocol.json"
   let latestSnapshotProtocol = eitherDecodeStrict' rawLatestSnapshotProtocol :: Either String ExtractedModernProtocol
+  print latestSnapshotProtocol
   return ()
 
 genVersions :: IO ()
