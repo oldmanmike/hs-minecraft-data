@@ -331,6 +331,52 @@ data ExtractedVersion = ExtractedVersion
 instance FromJSON ExtractedVersion
 instance ToJSON ExtractedVersion
 
+data ExtractedWindows = ExtractedWindows [ExtractedWindow]
+  deriving (Show,Eq,Generic)
+
+instance FromJSON ExtractedWindows
+
+data ExtractedWindow = ExtractedWindow
+  { windowId          :: String
+  , windowName        :: String
+  , windowSlots       :: Maybe [ExtractedSlot]
+  , windowProperties  :: Maybe [String]
+  , windowOpenWith    :: Maybe [ExtractedOpenWith]
+  } deriving (Show,Eq)
+
+instance FromJSON ExtractedWindow where
+  parseJSON (Object a) = ExtractedWindow
+    <$> a .: "id"
+    <*> a .: "name"
+    <*> a .:? "slot"
+    <*> a .:? "properties"
+    <*> a .:? "openedWith"
+  parseJSON _ = mzero
+
+data ExtractedSlot = ExtractedSlot
+  { slotName    :: String
+  , slotIndex   :: Int
+  , slotSize    :: Maybe Int
+  } deriving (Show,Eq)
+
+instance FromJSON ExtractedSlot where
+  parseJSON (Object a) = ExtractedSlot
+    <$> a .: "name"
+    <*> a .: "index"
+    <*> a .:? "size"
+  parseJSON _ = mzero
+
+data ExtractedOpenWith = ExtractedOpenWith
+  { openWithType    :: String
+  , openWithId      :: Int
+  } deriving (Show,Eq)
+
+instance FromJSON ExtractedOpenWith where
+  parseJSON (Object a) = ExtractedOpenWith
+    <$> a .: "type"
+    <*> a .: "id"
+  parseJSON _ = mzero
+
 type FuncString = (String,String)
 
 versionPathMap :: Map.Map String String
@@ -462,19 +508,14 @@ genProtocols = do
   putStrLn "Generating Protocol data..."
   rawClassicProtocol <- B.readFile "minecraft-data/data/0.30c/protocol.json"
   let classicProtocol = eitherDecodeStrict' rawClassicProtocol :: Either String ExtractedClassicProtocol
-  print classicProtocol
   rawRelease17Protocol <- B.readFile "minecraft-data/data/1.7/protocol.json"
   let release17Protocol = eitherDecodeStrict' rawRelease17Protocol :: Either String ExtractedModernProtocol
-  print release17Protocol
   rawRelease18Protocol <- B.readFile "minecraft-data/data/1.8/protocol.json"
   let release18Protocol = eitherDecodeStrict' rawRelease18Protocol :: Either String ExtractedModernProtocol
-  print release18Protocol
   rawRelease19Protocol <- B.readFile "minecraft-data/data/1.9/protocol.json"
   let release19Protocol = eitherDecodeStrict' rawRelease19Protocol :: Either String ExtractedModernProtocol
-  print release19Protocol
   rawLatestSnapshotProtocol <- B.readFile "minecraft-data/data/1.9.1-pre2/protocol.json"
   let latestSnapshotProtocol = eitherDecodeStrict' rawLatestSnapshotProtocol :: Either String ExtractedModernProtocol
-  print latestSnapshotProtocol
   return ()
 
 genVersions :: IO ()
@@ -496,7 +537,14 @@ genVersions = do
     Left err -> putStrLn err
 
 genWindows :: IO ()
-genWindows = putStrLn "Generating Windows data..."
+genWindows = do
+    putStrLn "Generating Window data..."
+    rawWindowsList <- mapM (\x -> B.readFile (x ++ "/windows.json")) dataPaths
+    let possibleWindowsList = mapM eitherDecodeStrict' rawWindowsList :: Either String [ExtractedWindows]
+    case possibleWindowsList of
+      Right windowsList -> return ()
+      Left err -> putStrLn err
+
 
 main :: IO ()
 main = do
