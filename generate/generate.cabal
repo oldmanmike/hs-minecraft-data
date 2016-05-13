@@ -7,8 +7,8 @@ bug-reports:          https://github.com/oldmanmike/hs-minecraft-data/issues
 license:              BSD3
 license-file:         LICENSE
 author:               Michael Carpenter
-maintainer:           mcarpenter.dev@gmail.com <oldmanmike.dev@gmail.com>
-copyright:            2016 (C) 2016 Michael Carpenter
+maintainer:           Michael Carpenter <oldmanmike.dev@gmail.com>
+copyright:            Copyright (C) 2016 Michael Carpenter
 category:             Data,Game
 build-type:           Simple
 extra-source-files:   README.md, LICENSE
@@ -33,7 +33,9 @@ library
                         base,
                         bytestring,
                         containers,
-                        split
+                        split,
+                        text,
+                        unordered-containers
   default-language:     Haskell2010
 
 executable gen

@@ -8,7 +8,7 @@ license:              BSD3
 license-file:         LICENSE
 author:               Michael Carpenter
 maintainer:           Michael Carpenter <oldmanmike.dev@gmail.com>
-copyright:            2016 (C) 2016 Michael Carpenter
+copyright:            Copyright (C) 2016 Michael Carpenter
 category:             Data,Game
 build-type:           Simple
 extra-source-files:   README.md, LICENSE
